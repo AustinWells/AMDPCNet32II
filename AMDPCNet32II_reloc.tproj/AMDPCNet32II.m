@@ -205,16 +205,6 @@ void initDE(char *des, int idx, unsigned int buf, int is_tx) {
     IOLog("AMDPCNet32II: Failed to get physical address of tx buffers\n");
   }
 
-  // IOLog("AMDPCNet32II: virtual : rdes = %x, tdes=%x\n", (unsigned long)rdes,
-  //       (unsigned long)tdes);
-  // IOLog("AMDPCNet32II: physical: rdes = %x, tdes=%x\n",
-  //       (unsigned long)rdes_physical, (unsigned long)tdes_physical);
-
-  // IOLog("AMDPCNet32II: virtual : rx_buffers = %x, tx_buffers=%x\n",
-  //       (unsigned long)rx_buffers, (unsigned long)tx_buffers);
-  // IOLog("AMDPCNet32II: physical: rx_buffers = %x, tx_buffers=%x\n",
-  //       (unsigned long)rx_buffers_physical, (unsigned long)tx_buffers_physical);
-
   for (i = 0; i < RX_BUFFER_COUNT; i++) {
     initDE(rdes, i, rx_buffers_physical, 0);
   }
@@ -230,21 +220,15 @@ void initDE(char *des, int idx, unsigned int buf, int is_tx) {
   int i = 0;
 
   initBlock = IOMalloc(34);
-  // IOLog("AMDPCNet32II: Initial initBlock Address: %x\n", (unsigned int)initBlock);
 
   // align to the next 4-byte boundary
   alignedAddress = ((unsigned int)initBlock + 3) & ~0x3;
   initBlock = (void *)alignedAddress;
 
-  // IOLog("AMDPCNet32II: Aligned initBlock Address: %x\n", (unsigned int)initBlock);
-
   if (IOPhysicalFromVirtual(IOVmTaskSelf(), (vm_address_t)initBlock,
                             &initBlockPhysical)) {
     IOLog("AMDPCNet32II: Failed to get physical address of initBlock\n");
   }
-
-  // IOLog("AMDPCNet32II: Physical: Aligned initBlock Address %x\n",
-  //       (unsigned int)initBlockPhysical);
 
   initBlock[0] = 0x00;
   initBlock[1] = 0x00;
@@ -260,12 +244,6 @@ void initDE(char *des, int idx, unsigned int buf, int is_tx) {
 
   *(unsigned long *)(&(initBlock[20])) = rdes_physical;
   *(unsigned long *)(&(initBlock[24])) = tdes_physical;
-
-  // IOLog("AMDPCNet32II: Initblock = [");
-  // for (i = 0; i < 28; i++) {
-  //   IOLog("%x ", (unsigned int)initBlock[i]);
-  // }
-  // IOLog("\n");
 
   [self writeCSR32:LANCE_CSR1:initBlockPhysical & 0xFFFF];
   [self writeCSR32:LANCE_CSR2:(initBlockPhysical >> 16) & 0xFFFF];
@@ -363,8 +341,6 @@ void initDE(char *des, int idx, unsigned int buf, int is_tx) {
   ioBase = base;
 
   [deviceDescription setInterruptList:&irq num:1];
-  /* [deviceDescription setPortRangeList: &port	num: 1];
-   */
 
   if ([super initFromDeviceDescription:pciDeviceDescription] == nil) {
     IOLog("AMDPCNet32II: Failed to initialize super\n");
@@ -444,7 +420,6 @@ void initDE(char *des, int idx, unsigned int buf, int is_tx) {
   if (!driverOwns(tdes, tx_buffer_ptr)) {
     // Queue packet
     [transmitQueue enqueue:pkt];
-    // IOLog("AMDPCNet32II: out of transmit buffers\n");
     return;
   }
 
@@ -470,11 +445,11 @@ void initDE(char *des, int idx, unsigned int buf, int is_tx) {
   // free the packet
   nb_free(pkt);
 
-  // [self incrementOutputPackets];
+  [network incrementOutputPackets];
 }
 
 - (void)interruptOccurred {
-  int i = 0;
+  int i;
   unsigned long status;
   unsigned long writeBack;
   unsigned short status_flags;
@@ -507,11 +482,11 @@ void initDE(char *des, int idx, unsigned int buf, int is_tx) {
 
   if (status & LANCE_CSR0_RINT) {
 
+    i = 0;
     // scan for next availible rdes (maybe this will solve the "lag"?)
     while (!driverOwns(rdes, rx_buffer_ptr)) {
       rx_buffer_ptr = (rx_buffer_ptr + 1) % RX_BUFFER_COUNT;
       if (i == RX_BUFFER_COUNT) {
-        // IOLog("AMDPCNet32II: No available rdes\n");
         break;
       }
       i++;
@@ -550,7 +525,7 @@ void initDE(char *des, int idx, unsigned int buf, int is_tx) {
 
       rx_buffer_ptr = (rx_buffer_ptr + 1) % RX_BUFFER_COUNT;
       startPkt++;
-      //[self incrementOutputPackets];
+      [network incrementInputPackets];
     }
     writeBack |= LANCE_CSR0_RINT;
   }
