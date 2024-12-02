@@ -16,8 +16,6 @@
 #import <driverkit/i386/directDevice.h>
 #import <driverkit/i386/ioPorts.h>
 #import <driverkit/kernelDriver.h>
-#import <kernserv/prototypes.h>
-#import <bsd/net/etherdefs.h>
 
 #import "AMDPCNet32II.h"
 #import "PCNetIO.h"
@@ -522,15 +520,12 @@ void initDE(char *des, int idx, unsigned int buf, int is_tx) {
     transmitInterruptCount++;
   }
 
-  if (receiveInterruptCount % 100 == 0 || transmitInterruptCount % 100 == 0 || bothInterruptCount % 100 == 0) {
-    printf("Interrupt counts - Receive: %d, Transmit: %d, Both: %d\n", receiveInterruptCount, transmitInterruptCount, bothInterruptCount);
-  }
-
   writeBack = 0;
   startPkt = 0;
 
-  // IOLog("AMDPCNet32II: Interrupt occurred!\n");
-  // IOLog("AMDPCNet32II: status (csr0) = %x\n", status);
+  IOLog("AMDPCNet32II: Interrupt occurred!\n");
+  IOLog("AMDPCNet32II: status (csr0) = %x\n", status);
+  IOLog("AMDPCNet32II: %d:%d:%d\n", transmitInterruptCount, receiveInterruptCount, bothInterruptCount);
 
   if (status & LANCE_CSR0_RINT) {
 

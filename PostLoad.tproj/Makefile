@@ -7,30 +7,26 @@
 # and Makefile.postamble (both optional), and Makefile will include them.
 #
 
-NAME = AMDPCNet32II_Rhapsody
+NAME = PostLoad
 
 PROJECTVERSION = 2.7
-PROJECT_TYPE = Driver
+PROJECT_TYPE = Tool
 LANGUAGE = English
 
-GLOBAL_RESOURCES = Default.table Localizable.strings
+MFILES = PostLoad_main.m
 
-TOOLS = AMDPCNet32II_Rhapsody.lksproj
+OTHERSRCS = Makefile.preamble Makefile Makefile.postamble m.template\
+            h.template
 
-OTHERSRCS = Makefile.preamble Makefile Makefile.postamble
 
 MAKEFILEDIR = $(MAKEFILEPATH)/pb_makefiles
 CODE_GEN_STYLE = DYNAMIC
-MAKEFILE = driver.make
-NEXTSTEP_INSTALLDIR = $(NEXT_ROOT)/private/Drivers
-LIBS = 
+MAKEFILE = tool.make
+LIBS = -lDriver
 DEBUG_LIBS = $(LIBS)
 PROF_LIBS = $(LIBS)
-BUNDLE_EXTENSION = config
 
 
-FRAMEWORK_PATHS = -F$(SYSTEM_LIBRARY_DIR)/PrivateFrameworks
-FRAMEWORKS = -framework appkit
 
 
 NEXTSTEP_OBJCPLUS_COMPILER = /usr/bin/cc

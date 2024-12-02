@@ -90,7 +90,7 @@
 #
 #    INSTALL_AS_USER: owner of the intalled products (default root)
 #    INSTALL_AS_GROUP: group of the installed products (default wheel)
-#    INSTALL_PERMISSIONS: permissions of the installed product (default o+rX)
+#    INSTALL_PERMISSION: permissions of the installed product (default o+rX)
 #
 #    OTHER_RECURSIVE_VARIABLES: The names of variables which you want to be
 #  	passed on the command line to recursive invocations of make.  Note that

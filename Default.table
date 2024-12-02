@@ -1,12 +1,15 @@
-"Class Names" = "AMDPCNet32II";
-"Family" = "Example";
+"Title" = "AMDPCNet32II_Rhapsody";
+"Family" = "";
+"Location" = "";
 "Bus Type" = "PCI";
 "Auto Detect IDs" = "0x20001022 0x20011022";
-"Version" = "0.07";
-"Driver Version" = "AMDPCNet32II Driver 0.07";
+"Instance" = "0";
+"Post-Load" = "PostLoad";
+"Pre-Load" = "PreLoad";
+"Driver Name" = "AMDPCNet32II_Rhapsody";
 "DMA Channels" = "";
-"I/O Ports" = "";
 "IRQ Levels" = "";
-"Share IRQ Levels" = "YES";
-"Server Name" = "AMDPCNet32II";
-
+"Memory Maps" = "";
+"I/O Ports" = "";
+"Share IRQ Levels" = YES";
+"Class Names" = "AMDPCNet32II";
