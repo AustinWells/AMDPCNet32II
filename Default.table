@@ -1,9 +1,9 @@
 "Class Names" = "AMDPCNet32II";
-"Family" = "Example";
+"Family" = "Network";
 "Bus Type" = "PCI";
 "Auto Detect IDs" = "0x20001022 0x20011022";
-"Version" = "0.07";
-"Driver Version" = "AMDPCNet32II Driver 0.07";
+"Version" = "0.08";
+"Driver Version" = "AMDPCNet32II Driver 0.08";
 "DMA Channels" = "";
 "I/O Ports" = "";
 "IRQ Levels" = "";
