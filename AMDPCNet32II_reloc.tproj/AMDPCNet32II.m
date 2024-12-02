@@ -60,13 +60,13 @@ void initDE(char *des, int idx, unsigned int buf, int is_tx) {
 + (BOOL)probe:deviceDescription {
   AMDPCNet32II *driver = [self alloc];
 
-  // IOLog("AMDPCNet32II: Driver: %p\n", driver);
-  // IOLog("By Austin Wells\n");
+  IOLog("AMDPCNet32II: Driver: %p\n", driver);
+  IOLog("By Austin Wells\n");
 
   if ([driver initFromDeviceDescription:deviceDescription] != nil) {
     return YES;
   } else {
-    // IOLog("AMDPCNet32II: Failed to initialize driver\n");
+    IOLog("AMDPCNet32II: Failed to initialize driver\n");
     // do we need to free?
     [driver free];
     return NO;
@@ -135,21 +135,21 @@ void initDE(char *des, int idx, unsigned int buf, int is_tx) {
 
 - (void)resetCard {
   ns_time_t start, end;
-  // IOLog("AMDPCNet32II: Resetting Card\n");
+  IOLog("AMDPCNet32II: Resetting Card\n");
   inl(ioBase + 0x18);
   inw(ioBase + 0x14);
   outl(ioBase + 0x10, 0);
 
-  // IOLog("AMDPCNet32II: starting card");
+  IOLog("AMDPCNet32II: starting card");
   IOGetTimestamp(&start);
   while (1) {
     IOGetTimestamp(&end);
-    // IOLog(".");
+    IOLog(".");
     if ((end - start) > 10000)
       break;
   }
-  // IOLog("\n");
-  // IOLog("AMDPCNet32II: Card Reset\n");
+  IOLog("\n");
+  IOLog("AMDPCNet32II: Card Reset\n");
 
   rx_buffer_ptr = 0;
   tx_buffer_ptr = 0;
@@ -184,12 +184,12 @@ void initDE(char *des, int idx, unsigned int buf, int is_tx) {
 
   if (IOPhysicalFromVirtual(IOVmTaskSelf(), (vm_address_t)rdes,
                             &rdes_physical) != IO_R_SUCCESS) {
-    // IOLog("AMDPCNet32II: Failed to get physical address of rdes\n");
+    IOLog("AMDPCNet32II: Failed to get physical address of rdes\n");
   }
 
   if (IOPhysicalFromVirtual(IOVmTaskSelf(), (vm_address_t)tdes,
                             &tdes_physical) != IO_R_SUCCESS) {
-    // IOLog("AMDPCNet32II: Failed to get physical address of tdes\n");
+    IOLog("AMDPCNet32II: Failed to get physical address of tdes\n");
   }
 
   rx_buffers = IOMalloc(RX_BUFFER_COUNT * BUFFER_SIZE);
@@ -197,12 +197,12 @@ void initDE(char *des, int idx, unsigned int buf, int is_tx) {
 
   if (IOPhysicalFromVirtual(IOVmTaskSelf(), (vm_address_t)rx_buffers,
                             &rx_buffers_physical) != IO_R_SUCCESS) {
-    // IOLog("AMDPCNet32II: Failed to get physical address of rx buffers\n");
+    IOLog("AMDPCNet32II: Failed to get physical address of rx buffers\n");
   }
 
   if (IOPhysicalFromVirtual(IOVmTaskSelf(), (vm_address_t)tx_buffers,
                             &tx_buffers_physical) != IO_R_SUCCESS) {
-    // IOLog("AMDPCNet32II: Failed to get physical address of tx buffers\n");
+    IOLog("AMDPCNet32II: Failed to get physical address of tx buffers\n");
   }
 
   // IOLog("AMDPCNet32II: virtual : rdes = %x, tdes=%x\n", (unsigned long)rdes,
@@ -240,7 +240,7 @@ void initDE(char *des, int idx, unsigned int buf, int is_tx) {
 
   if (IOPhysicalFromVirtual(IOVmTaskSelf(), (vm_address_t)initBlock,
                             &initBlockPhysical)) {
-    // IOLog("AMDPCNet32II: Failed to get physical address of initBlock\n");
+    IOLog("AMDPCNet32II: Failed to get physical address of initBlock\n");
   }
 
   // IOLog("AMDPCNet32II: Physical: Aligned initBlock Address %x\n",
@@ -276,35 +276,18 @@ void initDE(char *des, int idx, unsigned int buf, int is_tx) {
   unsigned long csr3;
 
   csr3 = [self readCSR32:LANCE_CSR3];
-  // IOLog("AMDPCNet32II: csr3: %x\n", csr3);
 
   [self writeCSR32:LANCE_CSR3:csr3];
-  // IOLog("AMDPCNet32II: csr3: %x\n", csr3);
 
   [self writeCSR32:LANCE_CSR3:0x5F50];
   csr3 = [self readCSR32:LANCE_CSR3];
-  // IOLog("AMDPCNet32II: csr3: %x\n", csr3);
 
   csr3 &= ~(LANCE_CSR3_RINTM); // enable receive interrupt
   csr3 &= ~(LANCE_CSR3_TINTM); // enable transmit interrupt
-  // csr3 &= ~(0x0100); // enable init done interrupt
-  /**
-  if (csr3 & 0x0400) { IOLog("AMDPCNet32II: RINT mask enabled\n"); }
-  else { IOLog("AMDPCNet32II: RINT mask disabled\n"); }
-
-  if (csr3 & 0x0200) { IOLog("AMDPCNet32II: TINT mask enabled\n"); }
-  else { IOLog("AMDPCNet32II: RINT mask disabled\n"); }
-
-  if (csr3 & 0x0400) { IOLog("AMDPCNet32II: RINT mask enabled\n"); }
-  else { IOLog("AMDPCNet32II: IDON mask disabled\n"); }
-  **/
-
-  // IOLog("AMDPCNet32II: csr3: %x\n", csr3);
 
   [self writeCSR32:LANCE_CSR3:csr3];
   csr3 = [self readCSR32:LANCE_CSR3];
 
-  // IOLog("AMDPCNet32II: csr3: %x\n", csr3);
 }
 
 - (void)startCard {
@@ -313,12 +296,12 @@ void initDE(char *des, int idx, unsigned int buf, int is_tx) {
   [self writeCSR32:LANCE_CSR0:(LANCE_CSR0_INIT | LANCE_CSR0_STRT | LANCE_CSR0_STRT | LANCE_CSR0_RXON | LANCE_CSR0_TXON |
                  LANCE_CSR0_IENA | LANCE_CSR0_TDMD)];
 
-  // IOLog("AMDPCNet32II: waiting for card");
+  IOLog("AMDPCNet32II: waiting for card");
   while (!([self readCSR32:LANCE_CSR0] & LANCE_CSR0_IDON)) {
-    // IOLog(".");
+    IOLog(".");
     IOSleep(100);
   }
-  // IOLog("\nAMDPCNet32II: we're so back!\n");
+  IOLog("\nAMDPCNet32II: we're so back!\n");
 
   csr0 = [self readCSR32:LANCE_CSR0];
   csr0 = csr0 & ~(LANCE_CSR0_INIT | LANCE_CSR0_STOP);
@@ -336,17 +319,17 @@ void initDE(char *des, int idx, unsigned int buf, int is_tx) {
   IOPCIConfigSpace config;
   unsigned long pciConfig;
 
-  // IOLog("AMDPCNet32II: Initializing driver\n");
+  IOLog("AMDPCNet32II: Initializing driver\n");
 
   if ([IODirectDevice getPCIConfigSpace:&config
                   withDeviceDescription:pciDeviceDescription] != IO_R_SUCCESS) {
-    // IOLog("AMDPCNet32II: Failed to get PCI config space\n");
+    IOLog("AMDPCNet32II: Failed to get PCI config space\n");
     [self free];
     return nil;
   }
 
-  // IOLog("AMDPCNet32II: Vendor ID: %x\n", config.VendorID);
-  // IOLog("AMDPCNet32II: Device ID: %x\n", config.DeviceID);
+  IOLog("AMDPCNet32II: Vendor ID: %x\n", config.VendorID);
+  IOLog("AMDPCNet32II: Device ID: %x\n", config.DeviceID);
 
   irq = (int)config.InterruptLine;
   base = (config.BaseAddress[0]) & 0xffffe;
@@ -354,13 +337,13 @@ void initDE(char *des, int idx, unsigned int buf, int is_tx) {
   port.start = base;
   port.size = 0x20; /* TODO: figure this out */
 
-  // IOLog("AMDPCNet32II: IRQ: %d\n", irq);
-  // IOLog("AMDPCNet32II: Base: %x\n", base);
+  IOLog("AMDPCNet32II: IRQ: %d\n", irq);
+  IOLog("AMDPCNet32II: Base: %x\n", base);
 
   if ([IODirectDevice getPCIConfigData:&pciConfig
                             atRegister:0x04
                  withDeviceDescription:pciDeviceDescription] != IO_R_SUCCESS) {
-    // IOLog("AMDPCNet32II: Failed to get PCI config data\n");
+    IOLog("AMDPCNet32II: Failed to get PCI config data\n");
     [self free];
     return nil;
   }
@@ -371,7 +354,7 @@ void initDE(char *des, int idx, unsigned int buf, int is_tx) {
   if ([IODirectDevice setPCIConfigData:pciConfig
                             atRegister:0x4
                  withDeviceDescription:pciDeviceDescription] != IO_R_SUCCESS) {
-    // IOLog("AMDPCNet32II: Can't set config space, exiting\n");
+    IOLog("AMDPCNet32II: Can't set config space, exiting\n");
     [self free];
     return nil;
   }
@@ -384,7 +367,7 @@ void initDE(char *des, int idx, unsigned int buf, int is_tx) {
    */
 
   if ([super initFromDeviceDescription:pciDeviceDescription] == nil) {
-    // IOLog("AMDPCNet32II: Failed to initialize super\n");
+    IOLog("AMDPCNet32II: Failed to initialize super\n");
     [super free];
     return nil;
   }
@@ -395,9 +378,9 @@ void initDE(char *des, int idx, unsigned int buf, int is_tx) {
     mac_addr[i] = inb(ioBase + i);
   }
 
-  // IOLog("AMDPCNet32II: MAC Adress: %02x:%02x:%02x:%02x:%02x:%02x\n",
-  //       mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4],
-  //       mac_addr[5]);
+  IOLog("AMDPCNet32II: MAC Adress: %02x:%02x:%02x:%02x:%02x:%02x\n",
+        mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4],
+        mac_addr[5]);
 
   [self configureCard];
   [self initRingBuffers];
@@ -425,11 +408,6 @@ void initDE(char *des, int idx, unsigned int buf, int is_tx) {
 
 - (BOOL)resetAndEnable:(BOOL)enable {
   [self disableAllInterrupts];
-
-  // if (enable)
-  //   IOLog("AMDPCNet32II: reset and enable\n");
-  // else
-  //   IOLog("AMDPCNet32II: reset and disable\n");
 
   /* Disable interrupts
    * Clear pending timeouts
@@ -529,9 +507,6 @@ void initDE(char *des, int idx, unsigned int buf, int is_tx) {
   writeBack = 0;
   startPkt = 0;
 
-  // IOLog("AMDPCNet32II: Interrupt occurred!\n");
-  // IOLog("AMDPCNet32II: status (csr0) = %x\n", status);
-
   if (status & LANCE_CSR0_RINT) {
 
     // scan for next availible rdes (maybe this will solve the "lag"?)
@@ -545,7 +520,6 @@ void initDE(char *des, int idx, unsigned int buf, int is_tx) {
     }
 
     while (driverOwns(rdes, rx_buffer_ptr)) {
-      // IOLog("AMDPCNet32II: Receive Interrupt\n");
       status_flags =
           *(unsigned short *)(&(rdes[rx_buffer_ptr * DESCRIPTOR_SIZE + 6]));
       if (status_flags & (1 << 14)) {
@@ -580,24 +554,19 @@ void initDE(char *des, int idx, unsigned int buf, int is_tx) {
       startPkt++;
       //[self incrementOutputPackets];
     }
-    writeBack |= LANCE_CSR0_RINT; //[self writeCSR32: 0: (0x0400)];
-    // IOLog("AMDPCNet32II: number of received packets = %d\n", startPkt++);
+    writeBack |= LANCE_CSR0_RINT;
   }
 
   if (status & LANCE_CSR0_IDON) {
-    // IOLog("AMDPCNet32II: Init Done Interrupt\n");
-    writeBack |= LANCE_CSR0_IDON; //[self writeCSR32: 0: (0x0100)];
+    writeBack |= LANCE_CSR0_IDON; 
   }
   if (status & LANCE_CSR0_TINT) {
-    // IOLog("AMDPCNet32II: Transmit Interrupt\n");
     writeBack |= LANCE_CSR0_TINT;
-    //[self writeCSR32: 0: (0x0200)];
   }
 
   // other interrupt flags we don't care about for now
   [self writeCSR32:LANCE_CSR0:0xf800 | writeBack | LANCE_CSR0_TDMD | LANCE_CSR0_IENA];
 
-  //[self writeCSR32: 0: status | (0x0040) | (0x0400) | (0x0200) | (0x0008)];
   [self enableAllInterrupts];
 }
 
@@ -624,11 +593,10 @@ void initDE(char *des, int idx, unsigned int buf, int is_tx) {
 }
 
 - (void)timeoutOccurred {
-  // IOLog("AMDPCNet32II: Timeout occurred\n");
+  IOLog("AMDPCNet32II: Timeout occurred\n");
 }
 
 - free {
-  // IOLog("AMDPCNet32II: freeing\n");
   return [super free];
 }
 
