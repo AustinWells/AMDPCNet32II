@@ -11,6 +11,8 @@
 #import <driverkit/kernelDriver.h>
 #import <kernserv/prototypes.h>
 
+#define NETWORK_TIMEOUT 3000
+
 @interface AMDPCNet32II : IOEthernet {
 
   /* Mac address */

@@ -485,8 +485,6 @@ void initDE(char *des, int idx, unsigned int buf, int is_tx) {
 
   netbuf_t pkt;
 
-  unsigned long csr3 = [self readCSR32:LANCE_CSR3];
-
   status = [self readCSR32:LANCE_CSR0];
 
   received = (status & LANCE_CSR0_RINT) != 0;
@@ -501,7 +499,7 @@ void initDE(char *des, int idx, unsigned int buf, int is_tx) {
   }
 
   if (receiveInterruptCount % 100 == 0 || transmitInterruptCount % 100 == 0 || bothInterruptCount % 100 == 0) {
-    printf("Interrupt counts - Receive: %d, Transmit: %d, Both: %d\n", receiveInterruptCount, transmitInterruptCount, bothInterruptCount);
+    IOLog("Interrupt counts - Receive: %d, Transmit: %d, Both: %d\n", receiveInterruptCount, transmitInterruptCount, bothInterruptCount);
   }
 
   writeBack = 0;
@@ -561,6 +559,9 @@ void initDE(char *des, int idx, unsigned int buf, int is_tx) {
     writeBack |= LANCE_CSR0_IDON; 
   }
   if (status & LANCE_CSR0_TINT) {
+    while(driverOwns(tdes, tx_buffer_ptr) && ((pkt = [transmitQueue dequeue]) != NULL)) {
+        [self transmit:pkt];
+    } 
     writeBack |= LANCE_CSR0_TINT;
   }
 
@@ -572,23 +573,29 @@ void initDE(char *des, int idx, unsigned int buf, int is_tx) {
 
 - (IOReturn)enableAllInterrupts {
   long csr3 = [self readCSR32:LANCE_CSR3];
-  // csr3 &= ~(LANCE_CSR3_TINTM);
-  // csr3 &= ~(LANCE_CSR3_IDONM);
   csr3 &= ~(LANCE_CSR3_RINTM);
   csr3 &= ~(LANCE_CSR3_TINTM);
   [self writeCSR32:LANCE_CSR3:csr3];
-  // IOLog("AMDPCNet32II: enable interrupts: csr3: %x\n", [self readCSR32: 3]);
+
+  // Why does this not work?
+  // long csr0 = [self readCSR32:LANCE_CSR0];
+  // csr0 |= LANCE_CSR0_IENA;
+  // [self writeCSR32:LANCE_CSR0:csr0];
+
   return [super enableAllInterrupts];
 }
 
 - (void)disableAllInterrupts {
   long csr3 = [self readCSR32:LANCE_CSR3];
-  // csr3 |= (LANCE_CSR3_TINTM);
-  // csr3 |= (LANCE_CSR3_IDONM);
   csr3 |= (LANCE_CSR3_RINTM);
   csr3 |= (LANCE_CSR3_TINTM);
   [self writeCSR32:LANCE_CSR3:csr3];
-  // IOLog("AMDPCNet32II: enable interrupts: csr3: %x\n", [self readCSR32: 3]);
+
+  // Why does this not work?
+  // long csr0 = [self readCSR32:LANCE_CSR0];
+  // csr0 &= ~(LANCE_CSR0_IENA);
+  // [self writeCSR32:LANCE_CSR0:csr0];
+
   [super disableAllInterrupts];
 }
 
