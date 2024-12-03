@@ -473,9 +473,6 @@ void initDE(char *des, int idx, unsigned int buf, int is_tx) {
     transmitInterruptCount++;
   }
 
-  if (receiveInterruptCount % 100 == 0 || transmitInterruptCount % 100 == 0 || bothInterruptCount % 100 == 0) {
-    IOLog("Interrupt counts - Receive: %d, Transmit: %d, Both: %d\n", receiveInterruptCount, transmitInterruptCount, bothInterruptCount);
-  }
 
   writeBack = 0;
   startPkt = 0;
@@ -573,6 +570,62 @@ void initDE(char *des, int idx, unsigned int buf, int is_tx) {
 
   [super disableAllInterrupts];
 }
+
+
+- (BOOL)enablePromiscuousMode {
+
+  IOLog("AMDPCNet32II: Suspending Card");
+  // set SPND Bit
+  [self writeCSR32: LANCE_CSR5: [self readCSR32: LANCE_CSR5] |  LANCE_CSR5_SPND];
+  // poll until the card is indeed in suspend mode
+  while(([self readCSR32: LANCE_CSR5] & LANCE_CSR5_SPND) == 0) {
+    IOLog(".");
+  }
+  IOLog("\nAMDPCNet32II: Card Suspended");
+
+  // Enable Promiscuous mode
+  [self writeCSR32: LANCE_CSR15_PROM: [self readCSR32: LANCE_CSR15] | LANCE_CSR15_PROM];
+
+  IOLog("AMDPCNet32II: Resuming Card");
+  // set SPND Bit
+  [self writeCSR32: LANCE_CSR5: [self readCSR32: LANCE_CSR5] & ~(LANCE_CSR5_SPND)];
+  // poll until the card is indeed in suspend mode
+  while(([self readCSR32: LANCE_CSR5] & LANCE_CSR5_SPND) == 1) {
+    IOLog(".");
+  }
+
+  IOLog("\nAMDPCNet32II: Card Resumed");
+  
+  // I don't know how to tell if this failed?
+  return YES;
+
+}
+- (void)disablePromiscuousMode {
+
+  IOLog("AMDPCNet32II: Suspending Card");
+  // set SPND Bit
+  [self writeCSR32: LANCE_CSR5: [self readCSR32: LANCE_CSR5] |  LANCE_CSR5_SPND];
+  // poll until the card is indeed in suspend mode
+  while(([self readCSR32: LANCE_CSR5] & LANCE_CSR5_SPND) == 0) {
+    IOLog(".");
+  }
+  IOLog("\nAMDPCNet32II: Card Suspended");
+
+  // Enable Promiscuous mode
+  [self writeCSR32: LANCE_CSR15_PROM: [self readCSR32: LANCE_CSR15] & ~(LANCE_CSR15_PROM)];
+
+  IOLog("AMDPCNet32II: Resuming Card");
+  // set SPND Bit
+  [self writeCSR32: LANCE_CSR5: [self readCSR32: LANCE_CSR5] & ~(LANCE_CSR5_SPND)];
+  // poll until the card is indeed in suspend mode
+  while(([self readCSR32: LANCE_CSR5] & LANCE_CSR5_SPND) == 1) {
+    IOLog(".");
+  }
+  
+  IOLog("\nAMDPCNet32II: Card Resumed");
+
+}
+
 
 - (void)timeoutOccurred {
   IOLog("AMDPCNet32II: Timeout occurred\n");

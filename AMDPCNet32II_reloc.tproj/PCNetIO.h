@@ -63,3 +63,8 @@
 #define LANCE_CSR3_BSWP      0x0004 /* Byte Swap */
 /*                           0x0002    Reserved
  *                           0x0001    Reserved */
+
+
+#define LANCE_CSR5_SPND  0x0001 /* Suspsend */
+
+#define LANCE_CSR15_PROM 0x8000 /* Promiscious mode */

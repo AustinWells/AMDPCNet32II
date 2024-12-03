@@ -46,6 +46,7 @@
   int receiveInterruptCount;
   int transmitInterruptCount;
   int bothInterruptCount;
+
 }
 
 + (BOOL)probe:(IODeviceDescription *)deviceDescription;
@@ -60,11 +61,11 @@
 - (IOReturn)enableAllInterrupts;
 - (void)disableAllInterrupts;
 
-/* TODO Features */
-/*
 - (BOOL)enablePromiscuousMode;
 - (void)disablePromiscuousMode;
 
+/* TODO Features */
+/*
 - (void)addMulticastAddress:(enet_addr_t *) address;
 - (void)removeMulticastAddress:(enet_addr_t *) address;
 
