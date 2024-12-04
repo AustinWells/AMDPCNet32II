@@ -47,6 +47,8 @@
   int transmitInterruptCount;
   int bothInterruptCount;
 
+  BOOL isMulticastMode;
+
 }
 
 + (BOOL)probe:(IODeviceDescription *)deviceDescription;
@@ -68,10 +70,10 @@
 /*
 - (void)addMulticastAddress:(enet_addr_t *) address;
 - (void)removeMulticastAddress:(enet_addr_t *) address;
+*/
 
 - (BOOL)enableMulticastMode;
 - (void)disableMulticastMode;
-*/
 
 - (void)resetCard;
 - (void)configureCard;

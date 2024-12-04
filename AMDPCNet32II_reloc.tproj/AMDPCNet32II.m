@@ -379,6 +379,8 @@ void initDE(char *des, int idx, unsigned int buf, int is_tx) {
   transmitInterruptCount = 0;
   bothInterruptCount = 0;
 
+  isMulticastMode = NO;
+
   return self;
 }
 
@@ -514,7 +516,14 @@ void initDE(char *des, int idx, unsigned int buf, int is_tx) {
         nb_write(pkt, 0, mcnt, rx_buffers + rx_buffer_ptr * BUFFER_SIZE);
       }
 
-      [network handleInputPacket:pkt extra:0];
+      // This should handle receiving multicast packets 
+      if (isMulticastMode && ([super isUnwantedMulticastPacket:(ether_header_t *)nb_map(pkt)])) {
+        IOLog("AMDPCNet32II: Unwanted Multicast Packet\n");  
+        nb_free(pkt);
+      }
+      else {
+        [network handleInputPacket:pkt extra:0];
+      }
 
       *(unsigned short *)(&(rdes[rx_buffer_ptr * DESCRIPTOR_SIZE + 6])) = 0;
       *(unsigned short *)(&(rdes[rx_buffer_ptr * DESCRIPTOR_SIZE + 6])) |=
@@ -574,19 +583,19 @@ void initDE(char *des, int idx, unsigned int buf, int is_tx) {
 
 - (BOOL)enablePromiscuousMode {
 
-  IOLog("AMDPCNet32II: Suspending Card");
+  IOLog("AMDPCNet32II: Suspending Card\n");
   // set SPND Bit
   [self writeCSR32: LANCE_CSR5: [self readCSR32: LANCE_CSR5] |  LANCE_CSR5_SPND];
   // poll until the card is indeed in suspend mode
   while(([self readCSR32: LANCE_CSR5] & LANCE_CSR5_SPND) == 0) {
     IOLog(".");
   }
-  IOLog("\nAMDPCNet32II: Card Suspended");
+  IOLog("\nAMDPCNet32II: Card Suspended\n");
 
   // Enable Promiscuous mode
   [self writeCSR32: LANCE_CSR15_PROM: [self readCSR32: LANCE_CSR15] | LANCE_CSR15_PROM];
 
-  IOLog("AMDPCNet32II: Resuming Card");
+  IOLog("AMDPCNet32II: Resuming Card\n");
   // set SPND Bit
   [self writeCSR32: LANCE_CSR5: [self readCSR32: LANCE_CSR5] & ~(LANCE_CSR5_SPND)];
   // poll until the card is indeed in suspend mode
@@ -594,7 +603,7 @@ void initDE(char *des, int idx, unsigned int buf, int is_tx) {
     IOLog(".");
   }
 
-  IOLog("\nAMDPCNet32II: Card Resumed");
+  IOLog("\nAMDPCNet32II: Card Resumed\n");
   
   // I don't know how to tell if this failed?
   return YES;
@@ -602,19 +611,19 @@ void initDE(char *des, int idx, unsigned int buf, int is_tx) {
 }
 - (void)disablePromiscuousMode {
 
-  IOLog("AMDPCNet32II: Suspending Card");
+  IOLog("AMDPCNet32II: Suspending Card\n");
   // set SPND Bit
   [self writeCSR32: LANCE_CSR5: [self readCSR32: LANCE_CSR5] |  LANCE_CSR5_SPND];
   // poll until the card is indeed in suspend mode
   while(([self readCSR32: LANCE_CSR5] & LANCE_CSR5_SPND) == 0) {
     IOLog(".");
   }
-  IOLog("\nAMDPCNet32II: Card Suspended");
+  IOLog("\nAMDPCNet32II: Card Suspended\n");
 
   // Enable Promiscuous mode
   [self writeCSR32: LANCE_CSR15_PROM: [self readCSR32: LANCE_CSR15] & ~(LANCE_CSR15_PROM)];
 
-  IOLog("AMDPCNet32II: Resuming Card");
+  IOLog("AMDPCNet32II: Resuming Card\n");
   // set SPND Bit
   [self writeCSR32: LANCE_CSR5: [self readCSR32: LANCE_CSR5] & ~(LANCE_CSR5_SPND)];
   // poll until the card is indeed in suspend mode
@@ -622,10 +631,22 @@ void initDE(char *des, int idx, unsigned int buf, int is_tx) {
     IOLog(".");
   }
   
-  IOLog("\nAMDPCNet32II: Card Resumed");
+  IOLog("\nAMDPCNet32II: Card Resumed\n");
 
 }
 
+
+// The AMD PCNet32 II has hardware support for multicast
+// but just leave that out for now
+- (BOOL)enableMulticastMode {
+  IOLog("AMDPCNet32II: Enabling Multicast Mode\n");
+  isMulticastMode = YES;
+  return YES;
+}
+- (void)disableMulticastMode {
+  IOLog("AMDPCNet32II: Disabling Multicast Mode\n");
+  isMulticastMode = NO;
+}
 
 - (void)timeoutOccurred {
   IOLog("AMDPCNet32II: Timeout occurred\n");
