@@ -11,5 +11,5 @@
 "IRQ Levels" = "";
 "Memory Maps" = "";
 "I/O Ports" = "";
-"Share IRQ Levels" = YES";
+"Share IRQ Levels" = "YES";
 "Class Names" = "AMDPCNet32II";
